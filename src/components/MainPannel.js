@@ -1,28 +1,27 @@
 import PropTypes from "prop-types";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef,useContext } from "react";
 import { useParams } from "react-router-dom";
 import '../styles/MainPannel.css';
 import { Transition } from 'react-transition-group';
 // import MainNote from "./MainNote";
 import MainNote from "./mainPannelFolder/MainNote";
+import MainFooter from "./mainPannelFolder/MainFooter";
 import MasterHeader from "./mainPannelFolder/MasterHeader";
+import { IsRightPannelVisibleContext, AnswerStateContext } from '../ContextProvider';
 
 
-function MainPannel({ onRightPannelVisible, onRequestedHelp, changedContentInfo}) {
-    // const [content, setContent] = useState("");
-    // const [isReady, setIsReady] = useState(false);
-    // const [changedContent, setChangedContent] = useState("");
-    const [isRightPannelVisible, setIsRightPannelVisible] = useState(false);
-    // const [isDraggedButtonOn, setIsDraggedButtonOn] = useState(false);
-    // const contentRef = useRef(null);
+
+function MainPannel({ onRequestedHelp, changedContentInfo}) {
+    const { state: {isRightPannelVisible}, actions:{setIsRightPannelVisible} } = useContext(IsRightPannelVisibleContext);
+    const { state: {answerState} } = useContext(AnswerStateContext);
 
     //자식에게 받은 값 부모에게 전달하기 (ai 요청, 패널 열라고 하기)
     const handleRequestedHelp = (...param) => {
         //현재 패널 열려있으면 고정, 아니면 이동
         onRequestedHelp(param[0]);
         if (!isRightPannelVisible){
-            onRightPannelVisible(true);
             setIsRightPannelVisible(true);
+            // setIsRightPannelVisible(true);
         }
         // setIsDraggedButtonOn(false);
     };
@@ -32,9 +31,9 @@ function MainPannel({ onRightPannelVisible, onRequestedHelp, changedContentInfo}
     };
 
     const transitionStyles = {
-        entering: { width: `100vw` },
+        entering: { width: `70vw` },
         entered: { width: `70vw` },
-        exiting: { width: `70vw` },
+        exiting: { width: `100vw` },
         exited: { width: `100vw` },  
     };
 
@@ -56,6 +55,13 @@ function MainPannel({ onRightPannelVisible, onRequestedHelp, changedContentInfo}
                                 <MainNote onRequestedHelp={handleRequestedHelp} changedContentInfo={changedContentInfo}/>
                             </div>
                         </div>
+                        <div className="mp-advertise-container">
+                            광고    
+                        </div>
+                        {/* <div className="mp-footer"> */}
+                            <MainFooter />
+                        {/* </div> */}
+
                     </div>
                 )}
             </Transition>

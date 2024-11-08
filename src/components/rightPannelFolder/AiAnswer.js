@@ -1,24 +1,14 @@
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import '../../styles/rightPannelFolder/AiAnswer.css'
-import { CSSTransition } from 'react-transition-group';
+import { IsRightPannelVisibleContext, AnswerStateContext } from '../../ContextProvider';
 
-function AiAnswer({ isRightPannelVisible, onRequestedHelp, isLoading, response, onChangeContent }) {
+
+function AiAnswer({ onRequestedHelp, response, onChangeContent }) {
+    const { state: {answerState}, actions:{setAnswerState} } = useContext(AnswerStateContext);
     const [responseTxt, setResponseTxt] = useState("");
-    // const [isLoading, setIsLoading] = useState(false);
     const [isClickedResponseTextButton, setIsClickedResponseTextButton] = useState([false, 0]);
-    const [isIdle, setIsIdle] = useState(true);
-    useEffect(()=> {
-        if (isLoading) {
-            setIsIdle(false);
-        }
-    }, [isLoading]);
-
-    RightPannel.propTypes = {
-        isLoading: PropTypes.bool,
-    };
-
 
 
     const handleResponseTextButtonMouseOver = (event) => {
@@ -52,71 +42,65 @@ function AiAnswer({ isRightPannelVisible, onRequestedHelp, isLoading, response, 
 
     const handleClickConfirm = () => {
         onChangeContent("selectedText", true, responseTxt);
-        setIsIdle(true);
+        setAnswerState("IDLE");
     }
 
 
 
     return (
         <>
-            <CSSTransition
-                in={isRightPannelVisible}
-                timeout={700}
-                classNames="slide"
-                unmountOnExit
-            >
-                <div className="right-pannel-container">
-                    <header className="rp-header">
-                        <h2 className="rp-header-title">수정하기</h2>
-                        <button className="rp-close-button">x</button>
-                    </header>
-                    {isIdle ? 
-                        <div>대기중입니다.</div> 
-                        :
-                        (!isLoading ? 
-                            <div className="rp-textarea-section">
-                                <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
-                                <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
-                                <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
-                            </div>
-                                :
-                            <div className="rp-textarea-section">
-                                <button 
-                                    id="1"
-                                    className="rp-response-text-button" 
-                                    onMouseOver={handleResponseTextButtonMouseOver}
-                                    onMouseOut={handleResponseTextButtonMouseOut}
-                                    onClick={handleResponseTextButtonClick}>
-                                        1번째 방안
-                                </button>
-                                <button 
-                                    id="2"
-                                    className="rp-response-text-button" 
-                                    onMouseOver={handleResponseTextButtonMouseOver}
-                                    onMouseOut={handleResponseTextButtonMouseOut}
-                                    onClick={handleResponseTextButtonClick}>
-                                        2번째 방안
-                                </button>
-                                <button 
-                                    id="3"
-                                    className="rp-response-text-button" 
-                                    onMouseOver={handleResponseTextButtonMouseOver}
-                                    onMouseOut={handleResponseTextButtonMouseOut}
-                                    onClick={handleResponseTextButtonClick}>
-                                        3번째 방안
-                                </button>
-                                <button onClick={handleClickRetry}>재실행</button>
-                                {isClickedResponseTextButton[0]  ?
-                                    <button onClick={handleClickConfirm}>결정</button>
-                                    : null
-                                }
-                            </div>
-                        )}
-                    
+            {answerState === "IDLE" ? 
+                <div>대기중입니다.</div> 
+                :
+                ((answerState === "LOADING") || (answerState === "RELOADING")  ? 
+                    <div className="rp-textarea-section">
+                        <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
+                        <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
+                        <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
+                    </div>
+                    :
+                    (answerState === "RECEIVED" ?
+                        <div className="rp-textarea-section">
+                            <button 
+                                id="1"
+                                className="rp-response-text-button" 
+                                onMouseOver={handleResponseTextButtonMouseOver}
+                                onMouseOut={handleResponseTextButtonMouseOut}
+                                onClick={handleResponseTextButtonClick}>
+                                    1번째 방안
+                            </button>
+                            <button 
+                                id="2"
+                                className="rp-response-text-button" 
+                                onMouseOver={handleResponseTextButtonMouseOver}
+                                onMouseOut={handleResponseTextButtonMouseOut}
+                                onClick={handleResponseTextButtonClick}>
+                                    2번째 방안
+                            </button>
+                            <button 
+                                id="3"
+                                className="rp-response-text-button" 
+                                onMouseOver={handleResponseTextButtonMouseOver}
+                                onMouseOut={handleResponseTextButtonMouseOut}
+                                onClick={handleResponseTextButtonClick}>
+                                    3번째 방안
+                            </button>
+                            <button onClick={handleClickRetry}>재실행</button>
+                            {isClickedResponseTextButton[0]  ?
+                                <button onClick={handleClickConfirm}>결정</button>
+                                : null
+                            }
+                        </div>
+                    : 
+                    (answerState === "ERROR" ?
+                        <div>ai 답변 에러남</div>
+                        : null
+                        ) 
+                    )
+                )}
+            
 
-                </div> 
-            </CSSTransition>
-        </>
+        </> 
 
     );
 }

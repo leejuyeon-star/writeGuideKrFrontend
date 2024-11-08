@@ -12,13 +12,13 @@
     transform: translateX(0); /* 현재 위치 */
 }
 .slide-exit-active {
-    transform: translateX(-100%); /* 왼쪽으로 나가는 효과 */
+    transform: translateX(100%); /* 오른쪽으로 나가는 효과 */
     transition: transform 700ms ease-out;
 }
 
 
 
-.right-pannel-container {
+.rp-main-container {
     position: fixed;
     top: 0;          /* 상단에 고정 */
     right: 0;         /* 왼쪽에 고정 */
@@ -32,9 +32,6 @@
     border-radius: 30px 0px 0px 30px;        /* 모서리 둥글게 */
     /*box-sizing: border-box;*/    /* 패딩과 테두리를 너비에 포함 */
 }
-
-
-
 
 
 .rp-header {

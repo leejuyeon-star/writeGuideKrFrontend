@@ -1,61 +1,32 @@
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import '../styles/RightPannel.css'
 import { CSSTransition } from 'react-transition-group';
+import AiAnswer from "./rightPannelFolder/AiAnswer";
+import { IsRightPannelVisibleContext, AnswerStateContext } from '../ContextProvider';
 
-function RightPannel({ isRightPannelVisible, onRequestedHelp, isLoading, response, onChangeContent }) {
-    const [responseTxt, setResponseTxt] = useState("");
-    // const [isLoading, setIsLoading] = useState(false);
-    const [isClickedResponseTextButton, setIsClickedResponseTextButton] = useState([false, 0]);
-    const [isIdle, setIsIdle] = useState(true);
-    useEffect(()=> {
-        if (isLoading) {
-            setIsIdle(false);
-        }
-    }, [isLoading]);
+function RightPannel({ onRequestedHelp, response, onChangeContent }) {
+    const { state: {answerState}, actions:{setAnswerState} } = useContext(AnswerStateContext);
 
-    RightPannel.propTypes = {
-        isLoading: PropTypes.bool,
+    const { state, actions } = useContext(IsRightPannelVisibleContext);
+    const { isRightPannelVisible } = state;
+    const { setIsRightPannelVisible } = actions;
+
+    //자식에게 받은 값 부모에게 전달하기
+    const handleRequestedHelp = (...param) => {
+        onRequestedHelp(param[0]);
     };
 
+    //자식에게 받은 값 부모에게 전달하기
+    const handleChangeContent = (...param) => {
+        onChangeContent(param[0], param[1], param[2]);
+    };
 
-
-    const handleResponseTextButtonMouseOver = (event) => {
-        if (isClickedResponseTextButton[0]) {return;}
-        //색 바뀌고
-        //내용 바뀌고
-        //1번째 내용 바꿔라! 신호 보내기
-        console.log(event.target.id);
-        const txt = event.target.innerText;
-        onChangeContent("selectedText", false, txt);
+    //창 닫기
+    const onClickCloseButton = () => {
+        setIsRightPannelVisible(false);
     }
-
-    const handleResponseTextButtonMouseOut = () => {
-        if (isClickedResponseTextButton[0]) {return;}
-        //색 원래대로
-        //내용 원래대로
-        onChangeContent("selectedText", false, "");
-    }
-    
-    const handleResponseTextButtonClick = (event) => {
-        const buttonId = event.target.id;
-        setIsClickedResponseTextButton([true, buttonId]);
-        const txt = event.target.innerText;
-        setResponseTxt(txt);
-        onChangeContent("selectedText", false, txt);
-    }
-
-    const handleClickRetry = () => {
-        onRequestedHelp(["retry", "", [0,0]]);
-    }
-
-    const handleClickConfirm = () => {
-        onChangeContent("selectedText", true, responseTxt);
-        setIsIdle(true);
-    }
-
-
 
     return (
         <>
@@ -63,58 +34,16 @@ function RightPannel({ isRightPannelVisible, onRequestedHelp, isLoading, respons
                 in={isRightPannelVisible}
                 timeout={700}
                 classNames="slide"
+                // mountOnEnter
                 unmountOnExit
             >
-                <div className="right-pannel-container">
+                <div className="rp-main-container">
                     <header className="rp-header">
                         <h2 className="rp-header-title">수정하기</h2>
-                        <button className="rp-close-button">x</button>
+                        <button className="rp-close-button" onClick={onClickCloseButton}>x</button>
                     </header>
-                    {isIdle ? 
-                        <div>대기중입니다.</div> 
-                        :
-                        (!isLoading ? 
-                            <div className="rp-textarea-section">
-                                <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
-                                <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
-                                <textarea className="rp-textarea" type="text" placeholder='로딩중..' />
-                            </div>
-                                :
-                            <div className="rp-textarea-section">
-                                <button 
-                                    id="1"
-                                    className="rp-response-text-button" 
-                                    onMouseOver={handleResponseTextButtonMouseOver}
-                                    onMouseOut={handleResponseTextButtonMouseOut}
-                                    onClick={handleResponseTextButtonClick}>
-                                        1번째 방안
-                                </button>
-                                <button 
-                                    id="2"
-                                    className="rp-response-text-button" 
-                                    onMouseOver={handleResponseTextButtonMouseOver}
-                                    onMouseOut={handleResponseTextButtonMouseOut}
-                                    onClick={handleResponseTextButtonClick}>
-                                        2번째 방안
-                                </button>
-                                <button 
-                                    id="3"
-                                    className="rp-response-text-button" 
-                                    onMouseOver={handleResponseTextButtonMouseOver}
-                                    onMouseOut={handleResponseTextButtonMouseOut}
-                                    onClick={handleResponseTextButtonClick}>
-                                        3번째 방안
-                                </button>
-                                <button onClick={handleClickRetry}>재실행</button>
-                                {isClickedResponseTextButton[0]  ?
-                                    <button onClick={handleClickConfirm}>결정</button>
-                                    : null
-                                }
-                            </div>
-                        )}
-                    
-
-                </div> 
+                    <AiAnswer onRequestedHelp={handleRequestedHelp} response={response} onChangeContent={handleChangeContent} />
+                </div>
             </CSSTransition>
         </>
 

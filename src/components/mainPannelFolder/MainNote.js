@@ -1,19 +1,19 @@
 import PropTypes from "prop-types";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import '../../styles/mainPannelFolder/MainNote.css'
 import { Transition } from 'react-transition-group';
+import { IsRightPannelVisibleContext, AnswerStateContext } from '../../ContextProvider';
 
 
-function MainNote({ onRequestedHelp, changedContentInfo}) {
+function MainNote({ onRequestedHelp, changedContentInfo }) {
     const [content, setContent] = useState("");
     const [isReady, setIsReady] = useState(false);
     const [changedContent, setChangedContent] = useState("");
-    // const [selectedText, setSelectedText] = useState("");
-    // const [selectedIdx, setSelectedIdx] = useState([0,0]);
-    // const [isRightPannelVisible, setIsRightPannelVisible] = useState(false);
     const [isDraggedButtonOn, setIsDraggedButtonOn] = useState(false);
+    const [isCursorButtonOn, setIsCursorButtonOn] = useState(false);
     const contentRef = useRef(null);
+    const { state: {answerState}, actions:{setAnswerState} } = useContext(AnswerStateContext);
 
     //기본 내용으로 돌아가기
     useEffect(() => {
@@ -60,9 +60,13 @@ function MainNote({ onRequestedHelp, changedContentInfo}) {
     };
 
     //타자칠때
+    const [cursorButtonPosition, setCursorButtonPosition] = useState({ top: 0, left: 0 });
     const onInput = () => {
         setContent(contentRef.current.innerText);
         // setContent(event.target.innerText);
+        setIsCursorButtonOn(true);
+        relocateCursorButton(window.getSelection());
+
         if (content.length < 10) 
             {return;}
         else {
@@ -76,13 +80,17 @@ function MainNote({ onRequestedHelp, changedContentInfo}) {
     //드래그한 문자의 index 찾기
     const findSelectedIdx = (selection) => {         // 선택된 단어의 시작 인덱스 찾기
         const range = selection.getRangeAt(0);
+
+        // console.log(range.startOffset, range.endOffset);
+        // return [range.startOffset, range.endOffset];
+        
         const textNode = range.startContainer; // 선택한 텍스트의 시작 노드
         const text = textNode.nodeValue; // 텍스트 노드의 값
         const selectedText = findSelectedText(selection);
-            const startIndex = text.indexOf(selectedText, range.startOffset);
-            const endIndex = startIndex + selectedText.length;
-
-            // setSelectedWordInfo(`선택된 단어: "${selectedText}", 시작 인덱스: ${startIndex}, 끝 인덱스: ${endIndex}`);
+        const startIndex = text.indexOf(selectedText, range.startOffset);
+        const endIndex = startIndex + selectedText.length;
+        
+        // setSelectedWordInfo(`선택된 단어: "${selectedText}", 시작 인덱스: ${startIndex}, 끝 인덱스: ${endIndex}`);
         return [startIndex, endIndex];
     }
 
@@ -98,7 +106,7 @@ function MainNote({ onRequestedHelp, changedContentInfo}) {
         if (selection.rangeCount > 0) {
             const selectedText = findSelectedText(selection);
             let withoutspace = selectedText.replace(/\s+/g, '');       
-            if (selection.length <= 0 || withoutspace.length <= 2) {
+            if (selectedText.length <= 0 || withoutspace.length <= 2) {
                 // setSelectedText('');
                 return false;
             }
@@ -113,22 +121,58 @@ function MainNote({ onRequestedHelp, changedContentInfo}) {
         const rect = range.getBoundingClientRect();
 
         // 버튼의 위치 설정 (textarea 안에서)
-        setButtonPosition({
+        setDraggedButtonPosition({
             top: rect.bottom + window.scrollY, // 선택한 텍스트의 아래쪽
             left: rect.right + window.scrollX // 선택한 텍스트의 오른쪽
         });
     }
 
-    const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 });
+    //끝문장 요청 버튼 위치 세팅
+    const relocateCursorButton = (selection) => {
+        const range = selection.getRangeAt(0);
+        const cursorIdx = range.endOffset; // 선택한 텍스트의 시작 노드
+        const rect = range.getBoundingClientRect();
+
+        // 버튼의 위치 설정 (textarea 안에서)
+        setCursorButtonPosition({
+            top: rect.bottom + window.scrollY, // 선택한 텍스트의 아래쪽
+            left: rect.right + window.scrollX // 선택한 텍스트의 오른쪽
+        });
+    }
+
+    const [draggedButtonPosition, setDraggedButtonPosition] = useState({ top: 0, left: 0 });
     // 드래그된 텍스트를 감지하여 버튼 세팅
     const onMouseUp = () => {
         const selection = window.getSelection();
-        if (isValidSelectedText(selection)) {
-            relocateDraggedButton(selection)        //버튼 재배치
-            setIsDraggedButtonOn(true);             
-        } else {
-            // setSelectedText(''); // 선택된 텍스트가 없으면 초기화
+        const range = selection.getRangeAt(0);
+        const cursorEndOffset = range.endOffset; // 선택한 텍스트의 시작 노드
+        const cursorStartOffset = range.startOffset; // 선택한 텍스트의 시작 노드
+        const dragCount = cursorEndOffset - cursorStartOffset;
+        if (cursorEndOffset <= 0) {               //처음 노트 클릭시 버튼 미생성
+            setIsCursorButtonOn(false);
             setIsDraggedButtonOn(false);
+        } else {
+            if ( dragCount > 0) {
+                //드래그 한 경우
+                //커서버튼 지우기
+                setIsCursorButtonOn(false);
+                if (isValidSelectedText(selection)) {
+                    //3글자 이상인 경우
+                    //드래그버튼 생성
+                    relocateDraggedButton(selection);
+                    setIsDraggedButtonOn(true);
+                } else {
+                    //3글자 이하인 경우
+                    //드래그버튼 지우기
+                    setIsDraggedButtonOn(false);
+                }
+            } else {
+                //드래그 안한 경우
+                //커서버튼 생성
+                setIsDraggedButtonOn(false);
+                relocateCursorButton(selection);
+                setIsCursorButtonOn(true);
+            }
         }
     };
 
@@ -153,7 +197,7 @@ function MainNote({ onRequestedHelp, changedContentInfo}) {
                     className="mn-textarea" 
                     value={changedContent}
                     type="text" 
-                >{changedContent}</div>
+                    >{changedContent}</div>
                 : 
                     <div 
                         ref={contentRef}
@@ -166,17 +210,32 @@ function MainNote({ onRequestedHelp, changedContentInfo}) {
                         placeholder='Write your content..' 
                         suppressContentEditableWarning={true}
                     > 
+                     </div>
+                        }
                         {isDraggedButtonOn ? 
                             <button 
                                 className="mn-help-dragged-button" 
                                 style={{
-                                    top: buttonPosition.top, 
-                                    left: buttonPosition.left,
+                                    top: draggedButtonPosition.top, 
+                                    left: draggedButtonPosition.left,
                                 }}
                                 onClick={onDraggedButtonClick}>
-                            </button> : null}
-                    </div>
-                }
+                            </button> : null
+                        }
+                        
+                        {isCursorButtonOn ? 
+                            <button 
+                                className="mn-help-cursor-button" 
+                                style={{
+                                    top: cursorButtonPosition.top, 
+                                    left: cursorButtonPosition.left,
+                                }}
+                                // onClick={onCursorButtonClick}
+                            >
+                            </button> : null
+                        }
+                   
+                
 
         </>
             // </div>
