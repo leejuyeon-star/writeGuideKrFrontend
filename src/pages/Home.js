@@ -1,12 +1,13 @@
 import { useState, useEffect, delay } from "react";
-import MainNote from "../components/MainNote";
+
+import MainPannel from "../components/MainPannel";
 import RightPannel from "../components/RightPannel";
 import { CSSTransition} from 'react-transition-group';
 import { CallClaude } from "../api/claude"
 
 
 function Home() {
-    const [helpMsg, setHelpMsg] = useState(["", ""]);
+    // const [helpMsg, setHelpMsg] = useState(["", ""]);
     const [isLoading, setIsLoading] = useState(false);
     const [answers, setAnswers] = useState(["","",""]);
     const [isRightPannelVisible, setIsRightPannelVisible] = useState(false);
@@ -23,6 +24,7 @@ function Home() {
     }
 
     const handleRequestedHelp = async ([_requestMsg, _content, _selectedIdx]) => {
+        console.log([_requestMsg, _content, _selectedIdx]);
         if (_requestMsg === "") {return;}
         if (_requestMsg === "selectedText") {
             // isReady = false;
@@ -47,7 +49,7 @@ function Home() {
     }
 
     const handleChangeContent = async (requestMsg, isApply, txt) => {
-        if (requestMsg === "" || content === "") {console.log("출력");return;}
+        if (requestMsg === "" || content === "") {;return;}
         if (requestMsg === "selectedText") {
             setChangedContentInfo([requestMsg, isApply, txt, content, selectedIdx]);
             // isLoading(false);
@@ -63,7 +65,7 @@ function Home() {
     return (
         <div>
             <button onClick={handleApiCall}>gpt call</button>
-            <MainNote onRightPannelVisible={onRightPannelVisible} onRequestedHelp={handleRequestedHelp} changedContentInfo={changedContentInfo}/>
+            <MainPannel onRightPannelVisible={onRightPannelVisible} onRequestedHelp={handleRequestedHelp} changedContentInfo={changedContentInfo}/>
             <RightPannel isRightPannelVisible={isRightPannelVisible} onRequestedHelp={handleRequestedHelp} isLoading={isLoading} response={answers} onChangeContent={handleChangeContent}/>
         </div>
     );

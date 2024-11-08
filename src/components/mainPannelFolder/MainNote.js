@@ -1,23 +1,19 @@
 import PropTypes from "prop-types";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import '../styles/MainNote.css'
+import '../../styles/mainPannelFolder/MainNote.css'
 import { Transition } from 'react-transition-group';
 
 
-function MainNote({ onRightPannelVisible, onRequestedHelp, changedContentInfo}) {
+function MainNote({ onRequestedHelp, changedContentInfo}) {
     const [content, setContent] = useState("");
     const [isReady, setIsReady] = useState(false);
     const [changedContent, setChangedContent] = useState("");
     // const [selectedText, setSelectedText] = useState("");
     // const [selectedIdx, setSelectedIdx] = useState([0,0]);
-    const [isRightPannelVisible, setIsRightPannelVisible] = useState(false);
+    // const [isRightPannelVisible, setIsRightPannelVisible] = useState(false);
     const [isDraggedButtonOn, setIsDraggedButtonOn] = useState(false);
     const contentRef = useRef(null);
-
-
-
-
 
     //기본 내용으로 돌아가기
     useEffect(() => {
@@ -55,10 +51,10 @@ function MainNote({ onRightPannelVisible, onRequestedHelp, changedContentInfo}) 
     const requestedHelp = (requestMsg, _selectedIdx) => {
         //현재 패널 열려있으면 고정, 아니면 이동
         onRequestedHelp([requestMsg, content, _selectedIdx]);
-        if (!isRightPannelVisible){
-            onRightPannelVisible(true);
-            setIsRightPannelVisible(true);
-        }
+        // if (!isRightPannelVisible){
+            // onRightPannelVisible(true);
+            // setIsRightPannelVisible(true);
+        // }
         setIsDraggedButtonOn(false);
 
     };
@@ -144,76 +140,47 @@ function MainNote({ onRightPannelVisible, onRequestedHelp, changedContentInfo}) 
         requestedHelp("selectedText", selectedIdx);
         setIsDraggedButtonOn(false);
     };
-        
-    MainNote.propTypes = {
-        // onRequestedHelp: PropTypes.array,
-    };
-
     
-    
-    const defaultStyle = {
-        transition: `width 700ms ease-out`,
-    };
 
-    const transitionStyles = {
-        entering: { width: `100vw` },
-        entered: { width: `66vw` },
-        exiting: { width: `66vw` },
-        exited: { width: `100vw` },  
-    };
-
-        return (
+    return (
+            // <div className="mn-sub-container">
             <>
-            <Transition in={isRightPannelVisible} timeout={700}>
-                {(state) => (
-                <div
-                    style={{
-                    ...defaultStyle,
-                    ...transitionStyles[state]
-                    }}
-                >
-                    <div className="main-note-container">
-                        <div className="mn-sub-container">
-                            <header>
-                                <h2>글쓰기</h2>
-                            </header>
-                            {changedContent ? 
-                             <div                                     
-                                className="mn-textarea" 
-                                value={changedContent}
-                                type="text" 
-                            >{changedContent}</div>
-                            : 
-                                <div 
-                                    ref={contentRef}
-                                    contentEditable
-                                    className="mn-textarea" 
-                                    // value={content}
-                                    onInput={onInput} 
-                                    onMouseUp={onMouseUp} 
-                                    type="text" 
-                                    placeholder='Write your content..' 
-                                    suppressContentEditableWarning={true}
-                                > 
-                                    {isDraggedButtonOn ? 
-                                        <button 
-                                            className="mn-help-dragged-button" 
-                                            style={{
-                                                top: buttonPosition.top, 
-                                                left: buttonPosition.left,
-                                            }}
-                                            onClick={onDraggedButtonClick}>
-                                        </button> : null}
-                                </div>
-                            }
-
-                        </div>
+                <header className="mn-header">
+                    <h2>글쓰기</h2>
+                </header>
+                {changedContent ? 
+                    <div                                     
+                    className="mn-textarea" 
+                    value={changedContent}
+                    type="text" 
+                >{changedContent}</div>
+                : 
+                    <div 
+                        ref={contentRef}
+                        contentEditable
+                        className="mn-textarea" 
+                        // value={content}
+                        onInput={onInput} 
+                        onMouseUp={onMouseUp} 
+                        type="text" 
+                        placeholder='Write your content..' 
+                        suppressContentEditableWarning={true}
+                    > 
+                        {isDraggedButtonOn ? 
+                            <button 
+                                className="mn-help-dragged-button" 
+                                style={{
+                                    top: buttonPosition.top, 
+                                    left: buttonPosition.left,
+                                }}
+                                onClick={onDraggedButtonClick}>
+                            </button> : null}
                     </div>
-                </div>
-                )}
-            </Transition>
+                }
+
         </>
-        );
+            // </div>
+    );
     
 
 
