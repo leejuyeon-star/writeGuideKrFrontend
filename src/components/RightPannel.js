@@ -20,7 +20,7 @@ function RightPannel({ onRequestedHelp, response, onChangeContent }) {
 
     //자식에게 받은 값 부모에게 전달하기
     const handleChangeContent = (...param) => {
-        onChangeContent(param[0], param[1], param[2]);
+        onChangeContent(param[0], param[1]);
     };
 
     //창 닫기

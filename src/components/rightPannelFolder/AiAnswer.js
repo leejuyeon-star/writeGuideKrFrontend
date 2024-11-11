@@ -10,6 +10,12 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent }) {
     const [responseTxt, setResponseTxt] = useState("");
     const [isClickedResponseTextButton, setIsClickedResponseTextButton] = useState([false, 0]);
 
+    useEffect(() => {
+        // 기본 텍스트를 설정합니다.
+        if (answerState === "LOADING"){
+            setIsClickedResponseTextButton([false, 0]);
+        }
+    }, [answerState]);
 
     const handleResponseTextButtonMouseOver = (event) => {
         if (isClickedResponseTextButton[0]) {return;}
@@ -18,14 +24,14 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent }) {
         //1번째 내용 바꿔라! 신호 보내기
         console.log(event.target.id);
         const txt = event.target.innerText;
-        onChangeContent("selectedText", false, txt);
+        onChangeContent(false, txt);
     }
 
     const handleResponseTextButtonMouseOut = () => {
         if (isClickedResponseTextButton[0]) {return;}
         //색 원래대로
         //내용 원래대로
-        onChangeContent("selectedText", false, "");
+        onChangeContent(false, "");
     }
     
     const handleResponseTextButtonClick = (event) => {
@@ -33,7 +39,7 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent }) {
         setIsClickedResponseTextButton([true, buttonId]);
         const txt = event.target.innerText;
         setResponseTxt(txt);
-        onChangeContent("selectedText", false, txt);
+        onChangeContent(false, txt);
     }
 
     const handleClickRetry = () => {
@@ -41,7 +47,7 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent }) {
     }
 
     const handleClickConfirm = () => {
-        onChangeContent("selectedText", true, responseTxt);
+        onChangeContent(true, responseTxt);
         setAnswerState("IDLE");
     }
 
@@ -66,24 +72,27 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent }) {
                                 className="rp-response-text-button" 
                                 onMouseOver={handleResponseTextButtonMouseOver}
                                 onMouseOut={handleResponseTextButtonMouseOut}
-                                onClick={handleResponseTextButtonClick}>
-                                    1번째 방안
+                                onClick={handleResponseTextButtonClick}
+                            >
+                                {response[0]}
                             </button>
                             <button 
                                 id="2"
                                 className="rp-response-text-button" 
                                 onMouseOver={handleResponseTextButtonMouseOver}
                                 onMouseOut={handleResponseTextButtonMouseOut}
-                                onClick={handleResponseTextButtonClick}>
-                                    2번째 방안
+                                onClick={handleResponseTextButtonClick}
+                            >
+                                {response[1]}
                             </button>
                             <button 
                                 id="3"
                                 className="rp-response-text-button" 
                                 onMouseOver={handleResponseTextButtonMouseOver}
                                 onMouseOut={handleResponseTextButtonMouseOut}
-                                onClick={handleResponseTextButtonClick}>
-                                    3번째 방안
+                                onClick={handleResponseTextButtonClick}
+                            >
+                                {response[2]}
                             </button>
                             <button onClick={handleClickRetry}>재실행</button>
                             {isClickedResponseTextButton[0]  ?

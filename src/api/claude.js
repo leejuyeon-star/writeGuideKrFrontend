@@ -5,14 +5,10 @@ import axios from 'axios';
 
 export const CallBetweenPhrase = async ([txt, idx]) => {
 
-    async function getResponsePost(targetWord, targetSentence, targetBeforeWord) {
+    async function getResponsePost(jsonRequestMsg) {
         try{
             const response = await axios.post('/api/claude/betweenphrase',
-                {
-                    targetWord: targetWord,
-                    targetSentence: targetSentence,
-                    targetBeforeWord: targetBeforeWord
-                },
+                jsonRequestMsg,
                 { "Content-Type": "application/json", withCredentials: true },);
                 console.log("response.data:");
                 console.log(response.data);
@@ -114,9 +110,22 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
 
     const formatJsonIntoAnswerList = (isSucceed, jsonData) => {
         if (isSucceed) {
-
-        } else {
+            if (jsonData.errorMessage === "") {
+                console.log("jsonData")
+                console.log(jsonData);
+    
+                console.log(jsonData.message);
+                const message = jsonData.message;
+                console.log(message.fir, message.sec, message.thir)
+                return {isSucceed: true, msg: [message.fir, message.sec, message.thir]};
+            } else {
+                console.log(jsonData.errorMessage);
+                return {isSucceed: false, msg: jsonData.errorMessage};
+            }
             
+        } else {
+            //network error
+            return {isSucceed: false, msg: "network error!"};
         }
     }
 
@@ -126,19 +135,103 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
     // const idx = [104,107];      //55,58  바야흐로
     // const idx = [542,544];      //120,122 때보다
 
-    const targetWord = txt.slice(idx[0], idx[1]+1);
-    const [isSuccess, targetSentence] = extractSentences(txt, idx);
+    const _targetWord = txt.slice(idx[0], idx[1]+1);
+    const [isSuccess, _targetSentence] = extractSentences(txt, idx);
     if (isSuccess) {
-        const targetBeforeWord = extractBeforeTargetWord(txt, idx, targetSentence, targetWord);
-        if (targetBeforeWord) {
+        const _targetBeforeWord = extractBeforeTargetWord(txt, idx, _targetSentence, _targetWord);
+        if (_targetBeforeWord) {
             // 중복된 단어 있는 경우
-            return getResponsePost(targetWord, targetSentence, targetBeforeWord);
+            const [_isSucceed, _jsonData] = await getResponsePost({targetWord: _targetWord, targetSentence: _targetSentence, targetBeforeWord: _targetBeforeWord});
+            return formatJsonIntoAnswerList(_isSucceed, _jsonData);
+            
         } else {
             // 중복된 단어 없는 경우
-            return getResponsePost(targetWord, targetSentence, null);
+            const [isSucceed, jsonData] = await getResponsePost(_targetWord, _targetSentence, null);
+            return formatJsonIntoAnswerList(isSucceed, jsonData);
         }
     } else {
-        return [false, targetSentence];
+        //사용자 잘못인 경우
+        // return [false, targetSentence];
+        return formatJsonIntoAnswerList(false, _targetSentence);
+    }
+    
+}
+
+export const CallAfterSentence = async (txt) => {
+
+    async function getResponsePost(jsonRequestMsg) {
+        try{
+            const response = await axios.post('/api/claude/aftersentence',
+                jsonRequestMsg,
+                { "Content-Type": "application/json", withCredentials: true },);
+                console.log("response.data:");
+                console.log(response.data);
+                return [true, response.data];
+        } catch (error) {
+            console.log("error:");
+            console.log(error);
+            return [false, error];
+        }        
+    }
+
+    const extractSentences = (wholeTxt) => {        //맨끝 문장 하나와 그 앞 문장만 리턴
+        if (wholeTxt.length <= 15) {
+            return [false, "문장이 너무 짧습니다."];
+        }
+        // .한개 이상 or ! or ? 뒤가 공백인 것을 기준으로 구분 / 숫자. .숫자 는 제외 
+        let sentences = wholeTxt.split(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/);
+        sentences = sentences.map((sentence, index) => {
+            const separator = wholeTxt.match(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/g)?.[index] || '';
+            return sentence + separator; // 문장과 구분자를 합쳐서 반환
+            // return sentence.trim() + separator; // 문장과 구분자를 합쳐서 반환
+        });
+        
+        if (sentences.length === 1){
+            return [true, wholeTxt];
+        } else {
+            const targetSentence = `${sentences[-2]}${sentences[-1]}`;
+            return [true, targetSentence];
+        }
+
+    }
+ 
+
+    const formatJsonIntoAnswerList = (isSucceed, jsonData) => {
+        if (isSucceed) {
+            if (jsonData.errorMessage === "") {
+                console.log("jsonData")
+                console.log(jsonData);
+    
+                console.log(jsonData.message);
+                const message = jsonData.message;
+                console.log(message.fir, message.sec, message.thir)
+                return {isSucceed: true, msg: [message.fir, message.sec, message.thir]};
+            } else {
+                console.log(jsonData.errorMessage);
+                return {isSucceed: false, msg: jsonData.errorMessage};
+            }
+            
+        } else {
+            //network error
+            return {isSucceed: false, msg: "network error!"};
+        }
+    }
+
+    // const txt = `유전자 가위 기술의 발달로 이제 우리는 1.12의 유전자를 편집하는 힘을 얻게 되었다? 이로 인해 유전적 질병의 치료뿐만 아니라 자질 강화는 물론이고 자녀의 유전자마저 결정할 수 있다? 바야흐로 인간은 자연 진화의 주인 자리에 올라 진정 만물의 영장이 되었다. 하지만 유전 정보 및 유전자 편집의 힘은 윤리적, 사회적으로 적지 않은 파장을 일으키고 있다. 생물 안정성이라는 기술상의 위험 요소는 물론이거나 이중 사용의 딜레마로 인한 바이오 테러 등의 생물 보안도 큰 사회적 이슈이다. 이러한 위험보다 더 심각한 것은 윤리물음이다. 동식물 대상의 유전자 편집은 동물권 물음을 야기하고, 인간 대상 유전자 편집은 치료를 넘어 자질 강화를 낳는 유전자 성형의 경우 정의와 연관하여 접근 기회의 공평성, 결과의 평등, 절차적 공정성 등의 윤리 원칙을 요구한다. 특히 맞춤아기의 경우처럼 다음 세대에 유전되는 생식세포 유전자 편집은 부모에 의한 자녀의 유전자 선택으로 부모와 자녀의 관계를 근본적으로 바꾸어 놓을 것이다. 윤리적 유전자 편집을 위한 민주적 숙의 과정이 그 어느 때보다 절실하게`;
+    // const idx = [28,30];            //유전자
+    // const idx = [79,82];            //물론이고
+    // const idx = [104,107];      //55,58  바야흐로
+    // const idx = [542,544];      //120,122 때보다
+
+    // const _targetWord = txt.slice(idx[0], idx[1]+1);
+    const [isSuccess, _targetSentence] = extractSentences(txt);
+    if (isSuccess) {
+            const [_isSucceed, _jsonData] = await getResponsePost({targetSentence: _targetSentence});
+            return formatJsonIntoAnswerList(_isSucceed, _jsonData);
+    } else {
+        //사용자 잘못인 경우
+        // return [false, targetSentence];
+        return formatJsonIntoAnswerList(false, _targetSentence);
     }
     
 }

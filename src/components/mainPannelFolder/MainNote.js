@@ -26,6 +26,7 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     //문자열 바꾸라고 하면 내용 바꾸기
     useEffect(() => {
         const [_requestMsg, isApply,changingTxt,_content,selectedIdx] = changedContentInfo;
+        console.log(_requestMsg, isApply,changingTxt,_content,selectedIdx);
         if (_requestMsg === "") {return;}
         if (_requestMsg === "selectedText") {
             if (changingTxt === "") {       //기존 내용으로 돌아와야 할 경우
@@ -43,6 +44,19 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                 const rightTxt = _content.slice(selectedIdx[1], );
                 console.log(`${leftTxt} ${changingTxt} ${rightTxt}`);
                 setChangedContent(`${leftTxt} ${changingTxt} ${rightTxt}`);
+            }
+        } else if (_requestMsg === "afterSentence") {
+            if (changingTxt === "") {       //기존 내용으로 돌아와야 할 경우
+                setChangedContent("");
+                return;
+            }
+            if (isApply) {
+                console.log("진짜바꾸기");
+                setContent(`${_content} ${changingTxt}`);
+                setChangedContent("");
+            } else {
+                console.log(`${_content} ${changingTxt}`);
+                setChangedContent(`${_content} ${changingTxt}`);
             }
         }
     }, [changedContentInfo]);
@@ -177,13 +191,28 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     };
 
     //단어 ai 버튼 클릭시
-    const onDraggedButtonClick =() => {
+    const onDraggedButtonClick = () => {
         const selection = window.getSelection();
         const selectedIdx = findSelectedIdx(selection);
+        console.log("selectedIdx");
+        console.log(selectedIdx);
 
         requestedHelp("selectedText", selectedIdx);
         setIsDraggedButtonOn(false);
     };
+    
+    const onCursorButtonClick = () => {
+        console.log("click!");
+        // console.log(e);
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const cursorIdx = 2; // 선택한 텍스트의 시작 노드
+        // const cursorIdx = range.endOffset; // 선택한 텍스트의 시작 노드
+        console.log(range);
+        console.log(cursorIdx);
+        requestedHelp("afterSentence", cursorIdx);
+        setIsCursorButtonOn(false);
+    }
     
 
     return (
@@ -230,7 +259,7 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                                     top: cursorButtonPosition.top, 
                                     left: cursorButtonPosition.left,
                                 }}
-                                // onClick={onCursorButtonClick}
+                                onClick={onCursorButtonClick}
                             >
                             </button> : null
                         }
