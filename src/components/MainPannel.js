@@ -1,13 +1,13 @@
 import PropTypes from "prop-types";
-import { useEffect, useState, useRef,useContext } from "react";
+import { useEffect, useState,useContext } from "react";
 import { useParams } from "react-router-dom";
 import '../styles/MainPannel.css';
 import { Transition } from 'react-transition-group';
 // import MainNote from "./MainNote";
 import MainNote from "./mainPannelFolder/MainNote";
-import MainFooter from "./mainPannelFolder/MainFooter";
 import MasterHeader from "./mainPannelFolder/MasterHeader";
 import { IsRightPannelVisibleContext, AnswerStateContext } from '../ContextProvider';
+import MainFooter from "./mainPannelFolder/MainFooter";
 
 
 
@@ -26,52 +26,31 @@ function MainPannel({ onRequestedHelp, changedContentInfo}) {
         // setIsDraggedButtonOn(false);
     };
  
-    const defaultStyle = {
-        transition: `width 700ms ease-out`,
-    };
-
-    const transitionStyles = {
-        entering: { width: `70vw` },
-        entered: { width: `70vw` },
-        exiting: { width: `100vw` },
-        exited: { width: `100vw` },  
-    };
 
     return (
         <>
             <Transition in={isRightPannelVisible} timeout={700}>
                 {(state) => (
-                    <div
-                        style={{
-                        ...defaultStyle,
-                        ...transitionStyles[state]
-                        }}
-                    >
-                        {/* <header className="mp-header"> */}
-                            <MasterHeader />
-                        {/* </header> */}
+                    <div className={`mp-transition-container mp-${state}`}>
                         <div className="mp-container">
                             <div className="mp-sub-container">
                                 <MainNote onRequestedHelp={handleRequestedHelp} changedContentInfo={changedContentInfo}/>
                             </div>
                         </div>
+                        <div>
+                            <br/><br/><br/>
+                        </div>
                         <div className="mp-advertise-container">
                             광고    
                         </div>
-                        {/* <div className="mp-footer"> */}
-                            <MainFooter />
-                        {/* </div> */}
+                        <MainFooter />
+                        
 
                     </div>
                 )}
             </Transition>
         </>
-    );
-    
-
-
-
-    
+    );    
 }
 
 

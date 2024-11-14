@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import '../../styles/mainPannelFolder/MainFooter.css'
 import { Transition } from 'react-transition-group';

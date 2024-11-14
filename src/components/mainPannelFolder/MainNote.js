@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import '../../styles/mainPannelFolder/MainNote.css'
 import { Transition } from 'react-transition-group';
 import { IsRightPannelVisibleContext, AnswerStateContext } from '../../ContextProvider';
+import { toast } from 'react-toastify'
+import "react-toastify/dist/ReactToastify.css";
 
 
 function MainNote({ onRequestedHelp, changedContentInfo }) {
@@ -14,6 +16,8 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     const [isCursorButtonOn, setIsCursorButtonOn] = useState(false);
     const contentRef = useRef(null);
     const { state: {answerState}, actions:{setAnswerState} } = useContext(AnswerStateContext);
+    const [wholeTextCountWithoutSpace, setWholeTextCountWithoutSpace] = useState(0);
+    const [wholeTextCountWithSpace, setWholeTextCountWithSpace] = useState(0);
 
     //기본 내용으로 돌아가기
     useEffect(() => {
@@ -22,6 +26,16 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
             contentRef.current.innerText = content;
         }
     }, [changedContent]);
+
+    useEffect(() => {
+        if (content.length === 0 || content === `\n`) {
+            setWholeTextCountWithoutSpace(0);
+            setWholeTextCountWithSpace(0);
+        } else {
+            setWholeTextCountWithoutSpace(content.replace(/(\s*)/g, "").length);
+            setWholeTextCountWithSpace(content.replace(/(\n*)/g, "").length);
+        }
+    }, [content]);
 
     //문자열 바꾸라고 하면 내용 바꾸기
     useEffect(() => {
@@ -213,6 +227,30 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
         requestedHelp("afterSentence", cursorIdx);
         setIsCursorButtonOn(false);
     }
+
+
+    const handleCopyClipBoard = async () => {
+        try {
+            await navigator.clipboard.writeText(content);
+            // alert('클립보드에 링크가 복사되었습니다.');
+            toast.success("복사 완료", {
+                position: "top-center",     //위치
+                autoClose: 700,        //소요시간
+                closeButton: false,     //닫기버튼 생성
+                progress: false,        //
+                // transition: 'flip',
+            });
+        } catch (e) {
+            // alert('복사에 실패하였습니다. 다시 시도해주세요.');
+            toast.warn("복사 실패. 다시 시도해주세요.", {
+                position: "top-center",     //위치
+                autoClose: 1000,        //소요시간
+                // closeButton: false,     //닫기버튼 생성
+                progress: false,        //
+                // transition: 'flip',
+            });
+        }
+    };
     
 
     return (
@@ -220,6 +258,7 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
             <>
                 <header className="mn-header">
                     <h2>글쓰기</h2>
+                    <button className="mn-paste-button" onClick={handleCopyClipBoard}>복사하기</button>
                 </header>
                 {changedContent ? 
                     <div                                     
@@ -263,6 +302,9 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                             >
                             </button> : null
                         }
+                        <div className="mn-bottom-container">
+                            <div className="mn-count-wholeText">{wholeTextCountWithSpace}자 (띄어쓰기 미포함 {wholeTextCountWithoutSpace}자)</div>    
+                        </div>
                    
                 
 

@@ -15,7 +15,7 @@ function MasterHeader() {
         <div className="mh-container">
             <h1 button className="mh-title-button">글잇다</h1>
             <button className="mh-introduce-button" onClick={onClickIntroduceButton}>글잇다 소개</button>
-            <h2>로그인</h2>
+            {/* <h2>로그인</h2> */}
         </div>
     );
 }

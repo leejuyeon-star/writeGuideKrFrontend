@@ -5,12 +5,14 @@ import {
   Route,
 } from "react-router-dom";
 import Home from './pages/Home';
+import { ToastContainer, toast } from 'react-toastify' 
 import { ContextProvider } from './ContextProvider';
 
 function App() {
   return (
     <ContextProvider>
     <div className="App">
+      <ToastContainer /> 
       <Router>
         <Routes>
             <Route path="/" element={<Home />} />

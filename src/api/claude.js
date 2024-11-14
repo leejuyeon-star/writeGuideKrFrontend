@@ -61,7 +61,7 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
             return [false, "해당 단어가 포함된 문장이 없습니다."];
         }
         if (foundSentence.length > 140) {
-            return [false, "문장의 길이가 너무 길거나 각 문장에 . 표시가 없습니다."];
+            return [false, "문장의 길이가 너무 길거나 문장을 구분할 수 없습니다. \n .!? 표시를 하여 문장을 구분해주세요."];
         }
 
         if (foundSentenceIndex === 0) {    
@@ -72,7 +72,7 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
             //찾은 문장이 두번째 문장 이상인 경우
             const beforeSentence = sentences[foundSentenceIndex-1];
             if (beforeSentence.length > 140) {
-                return [false, "문장의 길이가 너무 길거나 각 문장에 . 표시가 없습니다."]
+                return [false, "문장의 길이가 너무 길거나 문장을 구분할 수 없습니다. \n .!? 표시를 하여 문장을 구분해주세요."]
             }
             return [true, `${beforeSentence} ${foundSentence}`];
             // return [true, `${beforeSentence} ${foundSentence}`, foundWordIdx];
@@ -125,7 +125,7 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
             
         } else {
             //network error
-            return {isSucceed: false, msg: "network error!"};
+            return {isSucceed: false, msg: `네트워크 연결 실패. \n 잠시 후 다시 시도해주세요`};
         }
     }
 
@@ -152,7 +152,7 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
     } else {
         //사용자 잘못인 경우
         // return [false, targetSentence];
-        return formatJsonIntoAnswerList(false, _targetSentence);
+        return formatJsonIntoAnswerList(false, "잘못된 요청입니다. \n 문장과 단어를 확인해주세요.");
     }
     
 }
@@ -168,16 +168,15 @@ export const CallAfterSentence = async (txt) => {
                 console.log(response.data);
                 return [true, response.data];
         } catch (error) {
+            //서버가 실행되지 않는 경우
             console.log("error:");
             console.log(error);
-            return [false, error];
+            return [false, `네트워크 연결 실패. \n 잠시 후 다시 시도해주세요.`];
         }        
     }
 
     const extractSentences = (wholeTxt) => {        //맨끝 문장 하나와 그 앞 문장만 리턴
-        if (wholeTxt.length <= 15) {
-            return [false, "문장이 너무 짧습니다."];
-        }
+        if (wholeTxt.length <= 15) {return [false, "문장이 너무 짧습니다."];}
         // .한개 이상 or ! or ? 뒤가 공백인 것을 기준으로 구분 / 숫자. .숫자 는 제외 
         let sentences = wholeTxt.split(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/);
         sentences = sentences.map((sentence, index) => {
@@ -213,7 +212,7 @@ export const CallAfterSentence = async (txt) => {
             
         } else {
             //network error
-            return {isSucceed: false, msg: "network error!"};
+            return {isSucceed: false, msg: jsonData};
         }
     }
 
@@ -225,6 +224,7 @@ export const CallAfterSentence = async (txt) => {
 
     // const _targetWord = txt.slice(idx[0], idx[1]+1);
     const [isSuccess, _targetSentence] = extractSentences(txt);
+    console.log(_targetSentence);       //왜 두번 나오지?
     if (isSuccess) {
             const [_isSucceed, _jsonData] = await getResponsePost({targetSentence: _targetSentence});
             return formatJsonIntoAnswerList(_isSucceed, _jsonData);
