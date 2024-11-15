@@ -9,11 +9,14 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
         try{
             const response = await axios.post('/api/claude/betweenphrase',
                 jsonRequestMsg,
-                { "Content-Type": "application/json", withCredentials: true },);
+                { "Content-Type": "application/json", withCredentials: true },
+            );
                 console.log("response.data:");
                 console.log(response.data);
                 return [true, response.data];
         } catch (error) {
+            console.log("jsonRequestMsg:");
+            console.log(jsonRequestMsg);
             console.log("error:");
             console.log(error);
             return [false, error];
@@ -146,7 +149,7 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
             
         } else {
             // 중복된 단어 없는 경우
-            const [isSucceed, jsonData] = await getResponsePost(_targetWord, _targetSentence, null);
+            const [isSucceed, jsonData] = await getResponsePost({targetWord: _targetWord, targetSentence: _targetSentence, targetBeforeWord: ""});
             return formatJsonIntoAnswerList(isSucceed, jsonData);
         }
     } else {
@@ -161,6 +164,8 @@ export const CallAfterSentence = async (txt) => {
 
     async function getResponsePost(jsonRequestMsg) {
         try{
+            console.log("jsonRequestMsg");
+            console.log(jsonRequestMsg);
             const response = await axios.post('/api/claude/aftersentence',
                 jsonRequestMsg,
                 { "Content-Type": "application/json", withCredentials: true },);

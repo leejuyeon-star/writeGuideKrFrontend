@@ -63,13 +63,13 @@ function Home() {
                     msg = "이전 요청건이 없습니다";
                     return;
                 } else {
-                    const response = await CallBetweenPhrase([txt, idx]);
+                    const response = await CallBetweenPhrase([content, selectedIdx]);
                     isSucceed = response.isSucceed;
                     msg = response.msg;
                 }
             } else if (requestMsg === "afterSentence"){
                 console.log("이전 요청건이 'afterSentence' 인 경우")
-                const response = await CallAfterSentence(currentTxt);
+                const response = await CallAfterSentence(content);
                 isSucceed = response.isSucceed;
                 msg = response.msg;
             }

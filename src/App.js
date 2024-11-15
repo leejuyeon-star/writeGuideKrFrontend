@@ -7,6 +7,7 @@ import {
 import Home from './pages/Home';
 import { ToastContainer, toast } from 'react-toastify' 
 import { ContextProvider } from './ContextProvider';
+import "./styles/tooltip.css"
 
 function App() {
   return (

@@ -18,6 +18,12 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     const { state: {answerState}, actions:{setAnswerState} } = useContext(AnswerStateContext);
     const [wholeTextCountWithoutSpace, setWholeTextCountWithoutSpace] = useState(0);
     const [wholeTextCountWithSpace, setWholeTextCountWithSpace] = useState(0);
+    const copyImgUrl = process.env.PUBLIC_URL + "/images/copy.png";
+    const shareImgUrl = process.env.PUBLIC_URL + "/images/share.png";
+    const backWhiteImgUrl = process.env.PUBLIC_URL + "/images/go_back_white.png";
+    const forwardWhiteImgUrl = process.env.PUBLIC_URL + "/images/go_forward_white.png";
+    const backBlackImgUrl = process.env.PUBLIC_URL + "/images/go_back_black.png";
+    const forwardBlackImgUrl = process.env.PUBLIC_URL + "/images/go_forward_black.png";
 
     //기본 내용으로 돌아가기
     useEffect(() => {
@@ -48,7 +54,7 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                 return;
             }
             if (isApply) {
-                console.log("진짜바꾸기");
+                // console.log("진짜바꾸기");
                 const leftTxt = _content.slice(0,selectedIdx[0]);
                 const rightTxt = _content.slice(selectedIdx[1], );
                 setContent(`${leftTxt} ${changingTxt} ${rightTxt}`);
@@ -56,7 +62,7 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
             } else {
                 const leftTxt = _content.slice(0,selectedIdx[0]);
                 const rightTxt = _content.slice(selectedIdx[1], );
-                console.log(`${leftTxt} ${changingTxt} ${rightTxt}`);
+                // console.log(`${leftTxt} ${changingTxt} ${rightTxt}`);
                 setChangedContent(`${leftTxt} ${changingTxt} ${rightTxt}`);
             }
         } else if (_requestMsg === "afterSentence") {
@@ -65,11 +71,11 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                 return;
             }
             if (isApply) {
-                console.log("진짜바꾸기");
+                // console.log("진짜바꾸기");
                 setContent(`${_content} ${changingTxt}`);
                 setChangedContent("");
             } else {
-                console.log(`${_content} ${changingTxt}`);
+                // console.log(`${_content} ${changingTxt}`);
                 setChangedContent(`${_content} ${changingTxt}`);
             }
         }
@@ -229,8 +235,9 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     }
 
 
-    const handleCopyClipBoard = async () => {
+    const onClickCopyButton = async (event) => {
         try {
+            hideTooltip(event);
             await navigator.clipboard.writeText(content);
             // alert('클립보드에 링크가 복사되었습니다.');
             toast.success("복사 완료", {
@@ -251,14 +258,44 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
             });
         }
     };
+
+    const onClickBackButton = (event) => {
+        hideTooltip(event);
+    }
+    const onClickForwardButton = (event) => {
+        hideTooltip(event);
+    }
+    const onClickShareButton = (event) => {
+        hideTooltip(event);
+    }
+
+    const hideTooltip = (event) => {
+        const classList = event.currentTarget.classList;
+        if (!classList.contains('clicked')){
+            classList.toggle('clicked');
+        }
+    }
+
     
+
+
 
     return (
             // <div className="mn-sub-container">
             <>
                 <header className="mn-header">
-                    <h2>글쓰기</h2>
-                    <button className="mn-paste-button" onClick={handleCopyClipBoard}>복사하기</button>
+                    <button className="mn-back-button" onClick={onClickBackButton} tooltip="되돌리기" flow="up">
+                        <img src={backWhiteImgUrl} className="mn-back-img"/>
+                    </button>
+                    <button className="mn-forward-button" onClick={onClickForwardButton} disabled={true} tooltip="다시 실행" flow="up">
+                        <img src={forwardWhiteImgUrl} className="mn-forward-img"/>
+                    </button>
+                    <button className="mn-copy-button" onClick={onClickCopyButton} tooltip="복사하기" flow="up">
+                        <img src={copyImgUrl} className="mn-copy-img"/>
+                    </button>
+                    <button className="mn-share-button" onClick={onClickShareButton} tooltip="공유하기" flow="up">
+                        <img src={shareImgUrl} className="mn-share-img"/>
+                    </button>
                 </header>
                 {changedContent ? 
                     <div                                     
@@ -278,36 +315,33 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                         placeholder='Write your content..' 
                         suppressContentEditableWarning={true}
                     > 
-                     </div>
-                        }
-                        {isDraggedButtonOn ? 
-                            <button 
-                                className="mn-help-dragged-button" 
-                                style={{
-                                    top: draggedButtonPosition.top, 
-                                    left: draggedButtonPosition.left,
-                                }}
-                                onClick={onDraggedButtonClick}>
-                            </button> : null
-                        }
-                        
-                        {isCursorButtonOn ? 
-                            <button 
-                                className="mn-help-cursor-button" 
-                                style={{
-                                    top: cursorButtonPosition.top, 
-                                    left: cursorButtonPosition.left,
-                                }}
-                                onClick={onCursorButtonClick}
-                            >
-                            </button> : null
-                        }
-                        <div className="mn-bottom-container">
-                            <div className="mn-count-wholeText">{wholeTextCountWithSpace}자 (띄어쓰기 미포함 {wholeTextCountWithoutSpace}자)</div>    
-                        </div>
-                   
+                    </div>
+                }
+                {isDraggedButtonOn ? 
+                    <button 
+                        className="mn-help-dragged-button" 
+                        style={{
+                            top: draggedButtonPosition.top, 
+                            left: draggedButtonPosition.left,
+                        }}
+                        onClick={onDraggedButtonClick}>
+                    </button> : null
+                }
                 
-
+                {isCursorButtonOn ? 
+                    <button 
+                        className="mn-help-cursor-button" 
+                        style={{
+                            top: cursorButtonPosition.top, 
+                            left: cursorButtonPosition.left,
+                        }}
+                        onClick={onCursorButtonClick}
+                    >
+                    </button> : null
+                }
+                <div className="mn-bottom-container">
+                    <div className="mn-count-wholeText">{wholeTextCountWithSpace}자 (띄어쓰기 미포함 {wholeTextCountWithoutSpace}자)</div>    
+                </div>
         </>
             // </div>
     );

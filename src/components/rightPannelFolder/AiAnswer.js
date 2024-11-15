@@ -49,7 +49,7 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent, responseErrorMsg
         setIsClickedResponseTextButton([true, buttonId]);
         const txt = event.target.innerText;
         setResponseTxt(txt);
-        onChangeContent(false, txt);
+        // onChangeContent(false, txt);
         // isClicked
         setIsClicked("","","");
         if (buttonId == "1") {
@@ -59,13 +59,21 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent, responseErrorMsg
         } else if (buttonId == "3") {
             setIsClicked(["",""," clicked"]);
         }
-        onChangeContent(true, responseTxt);
+        onChangeContent(true, txt);
         setAnswerState("IDLE");
     }
 
-    const handleClickRetry = () => {
+    const handleClickRetry = (event) => {
         setIsClicked("","","");
+        hideTooltip(event);
         onRequestedHelp(["retry", "", [0,0]]);
+    }
+
+    const hideTooltip = (event) => {
+        const classList = event.currentTarget.classList;
+        if (!classList.contains('clicked')){
+            classList.toggle('clicked');
+        }
     }
 
     // const handleClickConfirm = () => {
@@ -133,7 +141,7 @@ function AiAnswer({ onRequestedHelp, response, onChangeContent, responseErrorMsg
                             >
                                 {response[2]}
                             </button>
-                            <button onClick={handleClickRetry} className="aa-retry-button">
+                            <button onClick={handleClickRetry} className="aa-retry-button" tooltip="재시도" flow="right">
                                 <img src={retryImgUrl} className="aa-retry-img"/>
                             </button>
                             {/* {isClickedResponseTextButton[0]  ? */}
