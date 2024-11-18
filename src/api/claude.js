@@ -7,6 +7,8 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
 
     async function getResponsePost(jsonRequestMsg) {
         try{
+            console.log("jsonRequestMsg");
+            console.log(jsonRequestMsg);
             const response = await axios.post('/api/claude/betweenphrase',
                 jsonRequestMsg,
                 { "Content-Type": "application/json", withCredentials: true },
@@ -25,15 +27,24 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
 
     const extractSentences = (wholeTxt, targetIdx) => {        //단어가 들어간 문장 하나와 그 앞 문장만 리턴
         if (targetIdx[1] - targetIdx[0] >= 15) {
-            return [false, "문장이 아닌 단어를 선택해주세요"];
+            return [false, "문장이 아닌 단어구를 선택해주세요"];
         }
+
+        const wholeTextWithoutEnter = txt.replace(/\n/g, ""); // \n을 모두 제거
+
         // .한개 이상 or ! or ? 뒤가 공백인 것을 기준으로 구분 / 숫자. .숫자 는 제외 
-        let sentences = wholeTxt.split(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/);
+        // let sentences = wholeTxt.split(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/);
+        let sentences = wholeTextWithoutEnter.split(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/);     //한개 이상의 엔터키 추가
+        console.log("sentences1");
+        console.log(sentences);
+
         sentences = sentences.map((sentence, index) => {
-            const separator = wholeTxt.match(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/g)?.[index] || '';
+            const separator = wholeTextWithoutEnter.match(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/g)?.[index] || '';
             return sentence + separator; // 문장과 구분자를 합쳐서 반환
             // return sentence.trim() + separator; // 문장과 구분자를 합쳐서 반환
         });
+        console.log("sentences2");
+        console.log(sentences);
         
 
         let foundSentenceIndex = -1;
@@ -138,7 +149,8 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
     // const idx = [104,107];      //55,58  바야흐로
     // const idx = [542,544];      //120,122 때보다
 
-    const _targetWord = txt.slice(idx[0], idx[1]+1);
+    const _targetWord = txt.slice(idx[0], idx[1]);
+    // const wholeTextWithoutEnter = txt.replace(/\n/g, ""); // \n을 모두 제거
     const [isSuccess, _targetSentence] = extractSentences(txt, idx);
     if (isSuccess) {
         const _targetBeforeWord = extractBeforeTargetWord(txt, idx, _targetSentence, _targetWord);
@@ -181,19 +193,28 @@ export const CallAfterSentence = async (txt) => {
     }
 
     const extractSentences = (wholeTxt) => {        //맨끝 문장 하나와 그 앞 문장만 리턴
+        console.log(wholeTxt);
         if (wholeTxt.length <= 15) {return [false, "문장이 너무 짧습니다."];}
+        const wholeTextWithoutEnter = txt.replace(/\n/g, ""); // \n을 모두 제거
+        // const wholeTextWithoutEnter = wholeTxt.replace(/\n/g, ""); // \n을 모두 제거
         // .한개 이상 or ! or ? 뒤가 공백인 것을 기준으로 구분 / 숫자. .숫자 는 제외 
-        let sentences = wholeTxt.split(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/);
+        let sentences = wholeTextWithoutEnter.split(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/);      
         sentences = sentences.map((sentence, index) => {
-            const separator = wholeTxt.match(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/g)?.[index] || '';
+            const separator = wholeTextWithoutEnter.match(/(?<!\d)\.{2,}(?!\d)|(?<!\d)\.(?!\d)|[!?]/g)?.[index] || '';   
             return sentence + separator; // 문장과 구분자를 합쳐서 반환
             // return sentence.trim() + separator; // 문장과 구분자를 합쳐서 반환
         });
+
         
         if (sentences.length === 1){
             return [true, wholeTxt];
         } else {
-            const targetSentence = `${sentences[-2]}${sentences[-1]}`;
+            const targetSentence = `${sentences[(sentences.length -2)]}${sentences[(sentences.length-1)]}`;
+            console.log("targetSentence[-1]");
+            console.log(sentences[(sentences.length-1)]);
+            console.log("targetSentence[-2]");
+            console.log(sentences[(sentences.length -2)]);
+            console.log("targetSentence3");
             return [true, targetSentence];
         }
 
@@ -228,8 +249,10 @@ export const CallAfterSentence = async (txt) => {
     // const idx = [542,544];      //120,122 때보다
 
     // const _targetWord = txt.slice(idx[0], idx[1]+1);
+    // const wholeTextWithoutEnter = txt.replace(/\n/g, ""); // \n을 모두 제거
+    
     const [isSuccess, _targetSentence] = extractSentences(txt);
-    console.log(_targetSentence);       //왜 두번 나오지?
+    
     if (isSuccess) {
             const [_isSucceed, _jsonData] = await getResponsePost({targetSentence: _targetSentence});
             return formatJsonIntoAnswerList(_isSucceed, _jsonData);

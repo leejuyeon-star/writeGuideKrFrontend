@@ -20,7 +20,8 @@ function Home() {
 
     const [answers, setAnswers] = useState(["","",""]);
     const [changedContentInfo, setChangedContentInfo] = useState(["", false, "", "", [0,0]]);
-    const [selectedIdx, setSelectedIdx] = useState([0,0]);
+    const [cursorIdx, setCursorIdx] = useState(0);
+    const [draggedIdx, setDraggedIdx] = useState([0,0]);
     const [content, setContent] = useState("");
     const [requestMsg, setRequestMsg] = useState("");
     const [responseErrorMsg, setResponseErrorMsg] = useState("");
@@ -30,48 +31,52 @@ function Home() {
         // const idx = [28,30];            //유전자
         // const currentTxt = `이로 인해 유전적 질병의 치료뿐만 아니라 자질 강화는 물론이고 자녀의 유전자마저 결정할 수 있다. 바야흐로 인간은 자연 진화의 주인 자리에 올라`;
 
-        const txt = _content;
-        const idx = _idx;
-        const currentTxt = _content; 
-
-        console.log([_requestMsg, _content, _idx]);
+        // if (_requestMsg !== null) {
+        //     return null;
+        // }
+        // const currentTxt = _content;    //afterSentence의 경우 사용
+        
         let isSucceed = false;
         let msg = "";
         if (_requestMsg === "") {return;}
         setResponseErrorMsg("");
         setAnswerState("LOADING");
         console.log("loading")
-        if (_requestMsg === "selectedText") {
+        if (_requestMsg === "draggedText") {
             setContent(_content);
-            setSelectedIdx(_idx);
+            setDraggedIdx(_idx);
             setRequestMsg(_requestMsg);
-            const response = await CallBetweenPhrase([txt, idx]);
+            const response = await CallBetweenPhrase([_content, _idx]);
             isSucceed = response.isSucceed;
             msg = response.msg;
         } else if (_requestMsg === "afterSentence") {
             setContent(_content);
+            setCursorIdx(_idx);
             setRequestMsg(_requestMsg);
-            const response = await CallAfterSentence(currentTxt);
+            const slicedContent = _content.slice(0, _idx);
+            console.log("뭐가 문젤까");
+            console.log(slicedContent);
+            const response = await CallAfterSentence(slicedContent);
             isSucceed = response.isSucceed;
             msg = response.msg;
         } else if (_requestMsg === "retry") {   //재시도 요청한 경우
-            //단어/구 재검색
-            if (requestMsg === "selectedText"){     
-                console.log("이전 요청건이 'selectedText'인 경우");
-                if (!content) {
-                    isSucceed = false;
-                    msg = "이전 요청건이 없습니다";
-                    return;
-                } else {
-                    const response = await CallBetweenPhrase([content, selectedIdx]);
+            if (!content) {
+                isSucceed = false;
+                msg = "이전 요청건이 없습니다";
+            } else {
+                //단어/구 재검색
+                if (requestMsg === "draggedText"){     
+                    console.log("이전 요청건이 'selectedText'인 경우");
+                        const response = await CallBetweenPhrase([content, draggedIdx]);
+                        isSucceed = response.isSucceed;
+                        msg = response.msg;
+                } else if (requestMsg === "afterSentence"){
+                    console.log("이전 요청건이 'afterSentence' 인 경우");
+                    const slicedContent = content.slice(0, cursorIdx);
+                    const response = await CallAfterSentence(slicedContent);
                     isSucceed = response.isSucceed;
                     msg = response.msg;
                 }
-            } else if (requestMsg === "afterSentence"){
-                console.log("이전 요청건이 'afterSentence' 인 경우")
-                const response = await CallAfterSentence(content);
-                isSucceed = response.isSucceed;
-                msg = response.msg;
             }
         } 
         
@@ -96,13 +101,13 @@ function Home() {
 
     const handleChangeContent = async (isApply, txt) => {
         if (requestMsg === "" || content === "") {;return;}
-        if (requestMsg === "selectedText") {
-            setChangedContentInfo([requestMsg, isApply, txt, content, selectedIdx]);
+        if (requestMsg === "draggedText") {
+            setChangedContentInfo([requestMsg, isApply, txt, content, draggedIdx]);
             // isLoading(false);
             // response([answer1, answer2, answer3]);
             
         } else if (requestMsg === "afterSentence"){
-            setChangedContentInfo([requestMsg, isApply, txt, content, null]);
+            setChangedContentInfo([requestMsg, isApply, txt, content, cursorIdx]);
         }
 
     }

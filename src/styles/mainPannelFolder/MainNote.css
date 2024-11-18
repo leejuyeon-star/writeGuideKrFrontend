@@ -105,6 +105,7 @@
 
     overflow: scroll;
     overflow-x: hidden;
+    white-space: pre-line       /* \n 개행 적용되도록 함 */
 }
 
 .mn-help-dragged-button {

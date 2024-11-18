@@ -46,9 +46,9 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     //문자열 바꾸라고 하면 내용 바꾸기
     useEffect(() => {
         const [_requestMsg, isApply,changingTxt,_content,selectedIdx] = changedContentInfo;
-        console.log(_requestMsg, isApply,changingTxt,_content,selectedIdx);
+        // console.log(_requestMsg, isApply,changingTxt,_content,selectedIdx);
         if (_requestMsg === "") {return;}
-        if (_requestMsg === "selectedText") {
+        if (_requestMsg === "draggedText") {
             if (changingTxt === "") {       //기존 내용으로 돌아와야 할 경우
                 setChangedContent("");
                 return;
@@ -70,27 +70,34 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                 setChangedContent("");
                 return;
             }
+            const leftTxt = _content.slice(0,selectedIdx);
+            const rightTxt = _content.slice(selectedIdx, );
             if (isApply) {
                 // console.log("진짜바꾸기");
-                setContent(`${_content} ${changingTxt}`);
+                setContent(`${leftTxt} ${changingTxt} ${rightTxt}`);
                 setChangedContent("");
             } else {
                 // console.log(`${_content} ${changingTxt}`);
-                setChangedContent(`${_content} ${changingTxt}`);
+                setChangedContent(`${leftTxt} ${changingTxt} ${rightTxt}`);
             }
         }
     }, [changedContentInfo]);
 
     //ai 요청, 패널 열라고 하기
-    const requestedHelp = (requestMsg, _selectedIdx) => {
+    const requestedHelp = (requestMsg, param) => {
         //현재 패널 열려있으면 고정, 아니면 이동
-        onRequestedHelp([requestMsg, content, _selectedIdx]);
+        if (requestMsg === "draggedText") {
+            onRequestedHelp([requestMsg, content, param]);
+        } else if (requestMsg === "afterSentence") {
+            onRequestedHelp([requestMsg, content, param])
+        }
+        
         // if (!isRightPannelVisible){
             // onRightPannelVisible(true);
             // setIsRightPannelVisible(true);
         // }
         setIsDraggedButtonOn(false);
-
+        setIsCursorButtonOn(false)
     };
 
     //타자칠때
@@ -112,33 +119,42 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     };
 
     //드래그한 문자의 index 찾기
-    const findSelectedIdx = (selection) => {         // 선택된 단어의 시작 인덱스 찾기
+    const findDraggedIdx = (selection) => {         // 선택된 단어의 시작 인덱스 찾기
         const range = selection.getRangeAt(0);
-
-        // console.log(range.startOffset, range.endOffset);
-        // return [range.startOffset, range.endOffset];
         
-        const textNode = range.startContainer; // 선택한 텍스트의 시작 노드
-        const text = textNode.nodeValue; // 텍스트 노드의 값
-        const selectedText = findSelectedText(selection);
-        const startIndex = text.indexOf(selectedText, range.startOffset);
+        const lastText = range.startContainer.nodeValue; // 마지막 문장
+        const selectedText = findDraggedText(selection);
+        const firstSentenceLastIdx = content.indexOf(lastText); //마지막 문장 이전 문장의 마지막 인덱스
+        const startIndex = firstSentenceLastIdx + lastText.indexOf(selectedText, range.startOffset);        //이전문장까지의 인덱스 + 단어가 들어간 문장 기준 단어의 인덱스
         const endIndex = startIndex + selectedText.length;
+        
+        // const firstIndex = content.indexOf(selectedText);
+        // const endIndex = content.indexOf(selectedText)+selectedText.length;
+
+
         
         // setSelectedWordInfo(`선택된 단어: "${selectedText}", 시작 인덱스: ${startIndex}, 끝 인덱스: ${endIndex}`);
         return [startIndex, endIndex];
     }
-
-
     
     //드래그한 문자 찾기
-    const findSelectedText = (selection) => {                
+    const findDraggedText = (selection) => {                
          return selection.toString().trim();       //.trim()붙여도돼?
     };    
+
+    // //클릭한 부분 문장의 인덱스 찾기
+    // const findSelectedIdx = (selection) => {
+    //     const range = selection.getRangeAt(0);
+    //     const textNode = range.startContainer; // 선택한 텍스트의 시작 노드
+    //     const text = textNode.nodeValue; // 텍스트 노드의 값
+    //     return range.startOffset;
+    //     // console.log(text.indexOf(selectedText, range.startOffset));
+    // }
     
     //ai 분석 가능한 문자인지 확인
     const isValidSelectedText = (selection) => {
         if (selection.rangeCount > 0) {
-            const selectedText = findSelectedText(selection);
+            const selectedText = findDraggedText(selection);
             let withoutspace = selectedText.replace(/\s+/g, '');       
             if (selectedText.length <= 0 || withoutspace.length <= 2) {
                 // setSelectedText('');
@@ -176,7 +192,7 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
 
     const [draggedButtonPosition, setDraggedButtonPosition] = useState({ top: 0, left: 0 });
     // 드래그된 텍스트를 감지하여 버튼 세팅
-    const onMouseUp = () => {
+    const onMoveCurosr = () => {
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
         const cursorEndOffset = range.endOffset; // 선택한 텍스트의 시작 노드
@@ -213,23 +229,25 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
     //단어 ai 버튼 클릭시
     const onDraggedButtonClick = () => {
         const selection = window.getSelection();
-        const selectedIdx = findSelectedIdx(selection);
-        console.log("selectedIdx");
-        console.log(selectedIdx);
+        const selectedIdx = findDraggedIdx(selection);
 
-        requestedHelp("selectedText", selectedIdx);
+        requestedHelp("draggedText", selectedIdx);
         setIsDraggedButtonOn(false);
     };
     
     const onCursorButtonClick = () => {
-        console.log("click!");
-        // console.log(e);
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
-        const cursorIdx = 2; // 선택한 텍스트의 시작 노드
-        // const cursorIdx = range.endOffset; // 선택한 텍스트의 시작 노드
-        console.log(range);
-        console.log(cursorIdx);
+
+    //     const textNode = range.startContainer; // 선택한 텍스트의 시작 노드
+    //     const text = textNode.nodeValue; // 텍스트 노드의 값
+    //     return range.startOffset;
+
+        const currentNodeText = range.startContainer.nodeValue; // 현재 클릭한 부분의 문장
+        const cursorIdxInCurrentNode = range.startOffset; // 선택한 텍스트의 시작 노드
+        const currentNodeLastIdx = content.indexOf(currentNodeText);    // 현재 클릭한 부분 문장의 마지막 인덱스
+
+        const cursorIdx = cursorIdxInCurrentNode + currentNodeLastIdx;
         requestedHelp("afterSentence", cursorIdx);
         setIsCursorButtonOn(false);
     }
@@ -310,7 +328,8 @@ function MainNote({ onRequestedHelp, changedContentInfo }) {
                         className="mn-textarea" 
                         // value={content}
                         onInput={onInput} 
-                        onMouseUp={onMouseUp} 
+                        onMouseUp={onMoveCurosr} 
+                        onKeyUp={onMoveCurosr}
                         type="text" 
                         placeholder='Write your content..' 
                         suppressContentEditableWarning={true}
