@@ -10,6 +10,8 @@ import '../styles/Home.css'
 import { toast } from 'react-toastify'
 import "react-toastify/dist/ReactToastify.css";
 
+import Login from "./Login";
+
 function Home() {
     //
     //전역변수
@@ -143,6 +145,7 @@ function Home() {
                 <div>
                     <br/><br/><br/>
                 </div>
+                <Login />
                 {/* <button onClick={handleApiCall}>gpt call</button> */}
                 <MainPannel onRequestedHelp={handleRequestedHelp} changedContentInfo={changedContentInfo}/>
                 <RightPannel onRequestedHelp={handleRequestedHelp} response={answers} onChangeContent={handleChangeContent} responseErrorMsg={responseErrorMsg}/>
