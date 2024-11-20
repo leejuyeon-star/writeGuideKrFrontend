@@ -1,7 +1,7 @@
 import { useState, useEffect, delay, useContext } from "react";
 
 import MainPannel from "../components/MainPannel";
-import MasterHeader from "../components/mainPannelFolder/MasterHeader";
+import MasterHeader from "../components/MasterHeader";
 import RightPannel from "../components/RightPannel";
 import { CSSTransition} from 'react-transition-group';
 import { CallBetweenPhrase, CallAfterSentence } from "../api/claude"
@@ -10,7 +10,7 @@ import '../styles/Home.css'
 import { toast } from 'react-toastify'
 import "react-toastify/dist/ReactToastify.css";
 
-import Login from "./Login";
+
 
 function Home() {
     //
@@ -56,7 +56,6 @@ function Home() {
             setCursorIdx(_idx);
             setRequestMsg(_requestMsg);
             const slicedContent = _content.slice(0, _idx);
-            console.log("뭐가 문젤까");
             console.log(slicedContent);
             const response = await CallAfterSentence(slicedContent);
             isSucceed = response.isSucceed;
@@ -145,7 +144,6 @@ function Home() {
                 <div>
                     <br/><br/><br/>
                 </div>
-                <Login />
                 {/* <button onClick={handleApiCall}>gpt call</button> */}
                 <MainPannel onRequestedHelp={handleRequestedHelp} changedContentInfo={changedContentInfo}/>
                 <RightPannel onRequestedHelp={handleRequestedHelp} response={answers} onChangeContent={handleChangeContent} responseErrorMsg={responseErrorMsg}/>

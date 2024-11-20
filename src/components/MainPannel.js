@@ -5,7 +5,6 @@ import '../styles/MainPannel.css';
 import { Transition } from 'react-transition-group';
 // import MainNote from "./MainNote";
 import MainNote from "./mainPannelFolder/MainNote";
-import MasterHeader from "./mainPannelFolder/MasterHeader";
 import { IsRightPannelVisibleContext, AnswerStateContext } from '../ContextProvider';
 import MainFooter from "./mainPannelFolder/MainFooter";
 

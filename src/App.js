@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import { ToastContainer, toast } from 'react-toastify' 
 import { ContextProvider } from './ContextProvider';
 import "./styles/tooltip.css"
+import Login from "./pages/Login";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Router>
         <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
         </Routes>
       </Router>
     </div>

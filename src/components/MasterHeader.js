@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import '../../styles/mainPannelFolder/MasterHeader.css'
+import '../styles/MasterHeader.css'
 import { Transition } from 'react-transition-group';
 
 
@@ -15,7 +15,7 @@ function MasterHeader() {
         <div className="mh-container">
             <h1 button className="mh-title-button">글잇다</h1>
             <button className="mh-introduce-button" onClick={onClickIntroduceButton}>글잇다 소개</button>
-            {/* <h2>로그인</h2> */}
+            <button>로그인</button>
         </div>
     );
 }
