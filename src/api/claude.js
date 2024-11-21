@@ -11,7 +11,7 @@ export const CallBetweenPhrase = async ([txt, idx]) => {
             console.log(jsonRequestMsg);
             const response = await axios.post('/api/claude/betweenphrase',
                 jsonRequestMsg,
-                { "Content-Type": "application/json", withCredentials: true },
+                { "Content-Type": "application/json", withCredentials: true },  //withCredentials: true: 브라우저에서 세션 쿠키(JSESSIONID)를 함께 전송
             );
                 console.log("response.data:");
                 console.log(response.data);

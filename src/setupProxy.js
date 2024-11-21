@@ -9,6 +9,14 @@ module.exports = function(app){
             pathFilter : '/api',
         }),
     );
+
+    app.use(
+        createProxyMiddleware({
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            pathFilter : '/logout',
+        })
+    );
 };
 
 
